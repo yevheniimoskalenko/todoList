@@ -1,48 +1,95 @@
 export const state = () => ({
-  todos: [
-    { id: 1, value: 'todo 1', completed: true },
-    { id: 2, value: 'todo 2', completed: false },
-  ],
+  todos: [],
 })
 export const getters = {
   getTodos: (state) => state.todos,
 }
 export const mutations = {
-  setTodo(state, payload) {
-    state.todos.push({ id: Date.now(), value: payload.todo, completed: false })
+  setTodoList(state, payload) {
+    state.todos = payload
   },
-  chengeCheckBox(state, payload) {
-    state.todos.filter((elem) => {
+  setTodo(state, { payload, data }) {
+    state.todos.push({
+      id: data.name,
+      todoItem: payload.todo,
+      todoCompleted: false,
+    })
+  },
+  async chengeCheckBox(state, payload) {
+    await state.todos.filter(async (elem) => {
       if (elem.id === payload) {
-        elem.completed = !elem.completed
+        const isFlug = (elem.todoCompleted = !elem.todoCompleted)
+
+        await this.$axios.$put(
+          `https://todo-vue-2393f.firebaseio.com/todo/${payload}/completed.json`,
+          `${!isFlug}`,
+          {
+            headers: {
+              'content-type': 'application/json',
+            },
+          }
+        )
       }
       return elem
     })
   },
-  deleteTodo(state, payload) {
-    state.todos.splice(payload, 1)
+
+  async deleteTodo(state, payload) {
+    const index = state.todos.findIndex((el) => el.id === payload.id)
+    await state.todos.splice(index, 1)
+    await this.$axios.$delete(
+      `https://todo-vue-2393f.firebaseio.com/todo/${payload.id}.json`
+    )
   },
-  clearItems(state) {
-    state.todos.forEach((element, index) => {
-      if (element.completed) {
-        // eslint-disable-next-line no-console
-        console.log(element)
+  async clearItems(state) {
+    await state.todos.forEach((element, index) => {
+      if (element.todoCompleted) {
         state.todos.splice(index, 1)
       }
     })
   },
 }
 export const actions = {
+  async getTodoList({ commit }) {
+    try {
+      const data = await this.$axios.$get(
+        'https://todo-vue-2393f.firebaseio.com/todo.json',
+        {
+          headers: {
+            'content-type': 'application/json',
+          },
+        }
+      )
+      const todoList = Object.keys(data).map((key) => {
+        return {
+          id: key,
+          todoItem: data[key].value,
+          todoCompleted: data[key].completed,
+        }
+      })
+      commit('setTodoList', todoList)
+    } catch (e) {}
+  },
   async addTodo({ commit }, payload) {
     try {
-      await commit('setTodo', payload)
+      const data = await this.$axios.$post(
+        'https://todo-vue-2393f.firebaseio.com/todo.json',
+        { value: payload.todo, completed: false },
+        {
+          headers: {
+            'content-type': 'application/json',
+          },
+        }
+      )
+      // eslint-disable-next-line no-console
+      await commit('setTodo', { payload, data })
     } catch (e) {}
   },
   chengeCheckBox({ commit }, payload) {
     commit('chengeCheckBox', payload)
   },
-  deleteTodo({ commit }, payload) {
-    commit('deleteTodo', payload)
+  deleteTodo({ commit }, { id }) {
+    commit('deleteTodo', { id })
   },
   clearItems({ commit }, payload) {
     commit('clearItems')

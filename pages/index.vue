@@ -2,37 +2,21 @@
   <div class="todoLIst">
     <el-row type="flex" justify="center">
       <el-col :span="10">
-        <div class="todo-header">
-          <h1>todo</h1>
-          <el-form
-            ref="form"
-            :model="form"
-            :rules="rules"
-            @submit.prevent.native
-          >
-            <el-form-item prop="todo">
-              <el-input
-                v-model="form.todo"
-                placeholder="todo item"
-                @keyup.native.enter="addTodo"
-              ></el-input>
-            </el-form-item>
-          </el-form>
-        </div>
+        <app-form />
         <div v-if="fiterTodo.length > 0" class="todo-body">
           <el-card>
             <ul class="todo">
               <li
-                v-for="(item, index) in fiterTodo"
-                :key="index"
-                :class="{ completed: item.completed }"
+                v-for="item in fiterTodo"
+                :key="item.id"
+                :class="{ completed: item.todoCompleted }"
                 @click="chengeCheckBox(item.id)"
               >
-                {{ item.value }}
+                {{ item.todoItem }}
                 <el-button
                   type="danger"
                   circle
-                  @click.stop="deleteTodo(index)"
+                  @click.stop="deleteTodo(item.id)"
                 ></el-button>
               </li>
             </ul>
@@ -61,18 +45,16 @@
 </template>
 
 <script>
+import appForm from '@/components/form'
 export default {
+  components: { appForm },
   data() {
     return {
       select: 'all',
-
-      form: {
-        todo: '',
-      },
-      rules: {
-        todo: [{ min: 2 }, { required: true }],
-      },
     }
+  },
+  async fetch({ store }) {
+    await store.dispatch('getTodoList')
   },
   computed: {
     fiterTodo() {
@@ -82,12 +64,12 @@ export default {
       }
       if (this.select === 'active') {
         list = this.$store.getters.getTodos.filter(
-          (el) => el.completed === false
+          (el) => el.todoCompleted === false
         )
       }
       if (this.select === 'completed') {
         list = this.$store.getters.getTodos.filter(
-          (el) => el.completed === true
+          (el) => el.todoCompleted === true
         )
       }
       return list
@@ -100,19 +82,8 @@ export default {
     chengeCheckBox(item) {
       this.$store.dispatch('chengeCheckBox', item)
     },
-    addTodo() {
-      this.$refs.form.validate((valid) => {
-        if (valid) {
-          const todo = {
-            todo: this.form.todo,
-          }
-          this.$store.dispatch('addTodo', todo)
-          this.form.todo = ''
-        }
-      })
-    },
     deleteTodo(id) {
-      this.$store.dispatch('deleteTodo', id)
+      this.$store.dispatch('deleteTodo', { id })
     },
     clearItems() {
       this.$store.dispatch('clearItems')
