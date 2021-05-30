@@ -10,7 +10,7 @@
                 v-for="item in fiterTodo"
                 :key="item.id"
                 :class="{ completed: item.todoCompleted }"
-                @click="chengeCheckBox(item.id)"
+                @click="chengeCheckBox(item.id, item.todoCompleted)"
               >
                 {{ item.todoItem }}
                 <el-button
@@ -79,8 +79,8 @@ export default {
     filterTodo(param) {
       this.select = param
     },
-    chengeCheckBox(item) {
-      this.$store.dispatch('chengeCheckBox', item)
+    chengeCheckBox(id, isFlug) {
+      this.$store.dispatch('chengeCheckBox', { id, isFlug })
     },
     deleteTodo(id) {
       this.$store.dispatch('deleteTodo', { id })

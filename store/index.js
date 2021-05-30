@@ -15,14 +15,13 @@ export const mutations = {
       todoCompleted: false,
     })
   },
-  async chengeCheckBox(state, payload) {
+  async chengeCheckBox(state, { id, isFlug }) {
     await state.todos.filter(async (elem) => {
-      if (elem.id === payload) {
-        const isFlug = (elem.todoCompleted = !elem.todoCompleted)
-
+      if (elem.id === id) {
+        elem.todoCompleted = !isFlug
         await this.$axios.$put(
-          `https://todo-vue-2393f.firebaseio.com/todo/${payload}/completed.json`,
-          `${!isFlug}`,
+          `https://todo-vue-2393f.firebaseio.com/todo/${id}/completed/.json`,
+          `${elem.todoCompleted}`,
           {
             headers: {
               'content-type': 'application/json',
@@ -42,9 +41,12 @@ export const mutations = {
     )
   },
   async clearItems(state) {
-    await state.todos.forEach((element, index) => {
+    await state.todos.forEach(async (element, index) => {
       if (element.todoCompleted) {
         state.todos.splice(index, 1)
+        await this.$axios.$delete(
+          `https://todo-vue-2393f.firebaseio.com/todo/${element.id}.json`
+        )
       }
     })
   },
