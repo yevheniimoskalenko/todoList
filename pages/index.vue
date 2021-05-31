@@ -10,7 +10,7 @@
                 v-for="item in fiterTodo"
                 :key="item.id"
                 :class="{ completed: item.todoCompleted }"
-                @click="chengeCheckBox(item.id, item.todoCompleted)"
+                @click.stop="chengeCheckBox(item.id, item.todoCompleted)"
               >
                 {{ item.todoItem }}
                 <el-button
@@ -32,7 +32,7 @@
                 >
               </div>
               <div class="clear">
-                <el-link type="danger" @click="clearItems"
+                <el-link type="danger" @click.stop="clearItems"
                   >Clear Completed</el-link
                 >
               </div>

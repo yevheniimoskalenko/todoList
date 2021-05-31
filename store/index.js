@@ -40,10 +40,14 @@ export const mutations = {
       `https://todo-vue-2393f.firebaseio.com/todo/${payload.id}.json`
     )
   },
+  /**
+   * ? clearItems bug
+   */
+
   async clearItems(state) {
     await state.todos.forEach(async (element, index) => {
       if (element.todoCompleted) {
-        state.todos.splice(index, 1)
+        await state.todos.splice(index, 1)
         await this.$axios.$delete(
           `https://todo-vue-2393f.firebaseio.com/todo/${element.id}.json`
         )
@@ -93,7 +97,7 @@ export const actions = {
   deleteTodo({ commit }, { id }) {
     commit('deleteTodo', { id })
   },
-  clearItems({ commit }, payload) {
+  clearItems({ commit }) {
     commit('clearItems')
   },
 }
